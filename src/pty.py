@@ -34,7 +34,7 @@ class Slave:
     def write(self, val: str) -> None:
         os.write(self.fd, val.encode("ascii"))
 
-    def read(self) -> str:
+    def read(self) -> bytes:
         return os.read(self.fd, 1024)
 
 

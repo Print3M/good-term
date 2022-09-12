@@ -1,3 +1,4 @@
+#!/usr/bin/python3
 import sys
 import os
 import threading
@@ -11,14 +12,11 @@ W_HEIGHT = 500
 
 
 def output_worker(master: Master, console: Console) -> None:
-    # Trzeba zrobić wielowątkowo, bo output może być przetwarzany
-    # przez kilka sekund, a chcemy móc zastopować wtedy proces (wysłać
-    # ctrl+c na mastera)
+    # Check if there is something to write on console and do it.
     while True:
         if master.is_waiting(25):
             data = master.read()
             console.output(data)
-
 
 
 def child_process(master: Master, slave: Slave) -> None:
@@ -28,6 +26,16 @@ def child_process(master: Master, slave: Slave) -> None:
     os.dup2(slave.fd, 1)
     os.dup2(slave.fd, 2)
     del slave
+
+    # Make child a session leader.
+    # Read more:
+    #  - https://en.wikipedia.org/wiki/Process_group
+    sid = os.setsid()
+    if sid == -1:
+        print(f"Error: setsid() error, returns: {sid}")
+        os.abort()
+
+        
     os.execv("/bin/bash", ["bash"])
 
 
